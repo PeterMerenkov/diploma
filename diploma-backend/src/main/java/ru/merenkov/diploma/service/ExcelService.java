@@ -9,15 +9,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Iterator;
 
 @Service
 public class ExcelService {
 
     public String readExcel(MultipartFile file) throws IOException {
-        InputStream in = file.getInputStream();
-        Workbook workbook = new XSSFWorkbook(in);
+        Workbook workbook;
+        workbook = new XSSFWorkbook(file.getInputStream());
+
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rows = sheet.iterator();
 
