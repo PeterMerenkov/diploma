@@ -16,7 +16,7 @@ import java.util.List;
 @Service
 public class ExcelService {
 
-    public List<List<Double>> readExcel(MultipartFile file) throws IOException {
+    public List<List<Double>> getRawDataFromFile(MultipartFile file) throws IOException {
         Workbook workbook;
         workbook = new XSSFWorkbook(file.getInputStream());
 
