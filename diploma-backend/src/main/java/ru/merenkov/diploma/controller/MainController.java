@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.merenkov.diploma.service.ExcelService;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/excel")
@@ -20,7 +21,7 @@ public class MainController {
     private final ExcelService excelService;
 
     @PostMapping
-    public String getExcelContent(@RequestParam("file") MultipartFile file) throws IOException {
+    public List<List<Double>> getExcelContent(@RequestParam("file") MultipartFile file) throws IOException {
         return excelService.readExcel(file);
     }
 }
