@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  frontend:
+    build:
+      context: ./diploma-frontend
+    ports:
+      - "8080:8080"
+
+  backend:
+    build:
+      context: ./diploma-backend
+    ports:
+      - "8081:8081"
