@@ -37,7 +37,7 @@ export default {
             'Content-Type': 'multipart/form-data'
           }
         });
-        this.result = response.data;
+        this.result = JSON.stringify(response.data);
       } catch (error) {
         console.error(error);
       }
