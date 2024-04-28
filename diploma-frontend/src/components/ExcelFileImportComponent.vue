@@ -3,8 +3,12 @@
   <div class="calculator">
     <form @submit.prevent="onSubmit">
       <div class="form-group">
-        <label for="file">Выберите файл</label>
-        <input type="file" class="form-control-file" id="file" @change="onFileChange" />
+        <label for="rawDataFile">Выберите файл с данными</label>
+        <input type="file" class="form-control-file" id="rawDataFile" @change="onFileChange1" />
+      </div>
+      <div class="form-group">
+        <label for="deltasFile">Выберите файл с дельтами</label>
+        <input type="file" class="form-control-file" id="deltasFile" @change="onFileChange2" />
       </div>
       <button type="submit" class="btn btn-primary">Отправить</button>
     </form>
@@ -20,16 +24,21 @@ export default {
   data() {
     return {
       result: null,
-      file: null,
+      rawDataFile: null,
+      deltasFile: null,
     };
   },
   methods: {
-    onFileChange(e) {
-      this.file = e.target.files[0];
+    onFileChange1(e) {
+      this.rawDataFile = e.target.files[0];
+    },
+    onFileChange2(e) {
+      this.deltasFile = e.target.files[0];
     },
     async onSubmit() {
       const formData = new FormData();
-      formData.append('file', this.file);
+      formData.append('rawDataFile', this.rawDataFile);
+      formData.append('deltasFile', this.deltasFile);
       
       try {
         const response = await axios.post('http://localhost:8081/api/v1/excel', formData, {

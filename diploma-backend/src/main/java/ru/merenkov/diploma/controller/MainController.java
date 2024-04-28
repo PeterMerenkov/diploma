@@ -23,9 +23,13 @@ public class MainController {
     private final CalculateService calculateService;
 
     @PostMapping
-    public List<List<FuzzyNumber>> getExcelContent(@RequestParam("file") MultipartFile file) throws IOException {
+    public List<List<FuzzyNumber>> getExcelContent(
+            @RequestParam("rawDataFile") MultipartFile rawDataFile,
+            @RequestParam("deltasFile") MultipartFile deltasFile
+    ) throws IOException {
         return calculateService.convertToFuzzyNumberList(
-                excelService.getRawDataFromFile(file)
+                excelService.getRawDataFromFile(rawDataFile),
+                excelService.getDeltasFromFile(deltasFile)
         );
     }
 }
