@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import ru.merenkov.diploma.domain.FuzzyNumber;
+import ru.merenkov.diploma.domain.ResultDataHolder;
 import ru.merenkov.diploma.service.CalculateService;
 import ru.merenkov.diploma.service.ExcelService;
 
@@ -23,13 +23,17 @@ public class MainController {
     private final CalculateService calculateService;
 
     @PostMapping
-    public List<List<FuzzyNumber>> getExcelContent(
+    public List<List<ResultDataHolder>> getExcelContent(
             @RequestParam("rawDataFile") MultipartFile rawDataFile,
-            @RequestParam("deltasFile") MultipartFile deltasFile
+            @RequestParam("deltasFile") MultipartFile deltasFile,
+            @RequestParam("termFile") MultipartFile termFile
     ) throws IOException {
-        return calculateService.convertToFuzzyNumberList(
-                excelService.getRawDataFromFile(rawDataFile),
-                excelService.getDeltasFromFile(deltasFile)
+        return calculateService.convertToResultData(
+                calculateService.convertToFuzzyNumberList(
+                        excelService.getRawDataFromFile(rawDataFile),
+                        excelService.getDeltasFromFile(deltasFile)
+                ),
+                excelService.getTermsDataFromFile(termFile)
         );
     }
 }

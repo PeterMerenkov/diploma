@@ -9,6 +9,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.merenkov.diploma.domain.DeltaHolder;
+import ru.merenkov.diploma.domain.TermsDataHolder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,5 +81,41 @@ public class ExcelService {
         }
 
         return deltasListList;
+    }
+
+    public List<List<TermsDataHolder>> getTermsDataFromFile(MultipartFile file) throws IOException {
+        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rows = sheet.iterator();
+        // skip column titles columns
+        rows.next();
+
+        List<List<TermsDataHolder>> termsDataListList = new ArrayList<>();
+        while (rows.hasNext()) {
+            Row row = rows.next();
+            Iterator<Cell> cells = row.iterator();
+            Cell paramNameCell = cells.next();
+
+            List<TermsDataHolder> termsDataList = new ArrayList<>();
+            while (cells.hasNext()) {
+                Cell smallestCell = cells.next();
+                Cell largestCell = cells.next();
+                Cell termSetNameCell = cells.next();
+                Cell importanceWeightCell = cells.next();
+
+                termsDataList.add(new TermsDataHolder(
+                        paramNameCell.getStringCellValue(),
+                        smallestCell.getNumericCellValue(),
+                        largestCell.getNumericCellValue(),
+                        termSetNameCell.getStringCellValue(),
+                        importanceWeightCell.getNumericCellValue()
+                ));
+            }
+
+            termsDataListList.add(termsDataList);
+        }
+
+        return termsDataListList;
     }
 }
