@@ -16,46 +16,48 @@
       </div>
       <button type="submit" class="btn btn-primary">Отправить</button>
     </form>
-    <textarea v-if="result" v-model="result" readonly></textarea>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import { saveAs } from 'file-saver';
 
 export default {
   name: 'ExcelFileImportComponent',
   data() {
     return {
-      result: null,
-      rawDataFile: null,
+      rawValuesFile: null,
       deltasFile: null,
-      termFile: null,
+      termSetsFile: null,
     };
   },
   methods: {
     onFileChange1(e) {
-      this.rawDataFile = e.target.files[0];
+      this.rawValuesFile = e.target.files[0];
     },
     onFileChange2(e) {
       this.deltasFile = e.target.files[0];
     },
     onFileChange3(e) {
-      this.termFile = e.target.files[0];
+      this.termSetsFile = e.target.files[0];
     },
     async onSubmit() {
       const formData = new FormData();
-      formData.append('rawDataFile', this.rawDataFile);
+      formData.append('rawValuesFile', this.rawValuesFile);
       formData.append('deltasFile', this.deltasFile);
-      formData.append('termFile', this.termFile);
+      formData.append('termSetsFile', this.termSetsFile);
       
       try {
         const response = await axios.post('http://localhost:8081/api/v1/excel', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
-          }
+          },
+          responseType: 'blob',
         });
-        this.result = JSON.stringify(response.data);
+
+        const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, 'file.xlsx');
       } catch (error) {
         console.error(error);
       }
