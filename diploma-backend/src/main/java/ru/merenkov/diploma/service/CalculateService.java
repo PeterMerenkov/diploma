@@ -29,7 +29,7 @@ public class CalculateService {
             for (Double value : valuesDataHolder.values()) {
                 fuzzyNumbersHolder.fuzzyNumbers().add(
                         FuzzyNumbersHolder.FuzzyNumber.builder()
-                                .largestValue(new BigDecimal(value)
+                                .smallestValue(new BigDecimal(value)
                                         .subtract(BigDecimal.valueOf(deltaDataHolder.delta1())))
                                 .value(new BigDecimal(value))
                                 .largestValue(new BigDecimal(value)
@@ -58,16 +58,26 @@ public class CalculateService {
             for (FuzzyNumbersHolder.FuzzyNumber fuzzyNumber : fuzzyNumbersHolder.fuzzyNumbers()) {
                 List<TermSetsDataHolder.TermSetData> crossedTermSets = termSetsDataHolder.termSets().stream()
                         .filter(
-                                termSet -> termSet.smallestValue() <= fuzzyNumber.largestValue().doubleValue()
-                                        || termSet.largestValue() <= fuzzyNumber.smallestValue().doubleValue()
+                                termSet -> (termSet.smallestValue() <= fuzzyNumber.value().doubleValue()
+                                        && termSet.largestValue() >= fuzzyNumber.value().doubleValue())
+                                        || (termSet.smallestValue() <= fuzzyNumber.largestValue().doubleValue()
+                                        && termSet.largestValue() >= fuzzyNumber.largestValue().doubleValue())
                         )
                         .toList();
                 TermSetsDataHolder.TermSetData suitableTermSet = crossedTermSets.stream()
-                        .reduce((termSet1, termSet2) ->
-                                termSet1.importanceWeight() > termSet2.importanceWeight()
-                                        ? termSet1
-                                        : termSet2
-                        ).orElseThrow(() -> new RuntimeException("No term set found"));
+                        .reduce(
+                                (termSet1, termSet2) ->
+                                        termSet1.importanceWeight() > termSet2.importanceWeight()
+                                                ? termSet1
+                                                : termSet2
+                        ).orElseGet(
+                                () -> TermSetsDataHolder.TermSetData.builder()
+                                        .name("вне терм-множества")
+                                        .importanceWeight(0.0)
+                                        .smallestValue(0.0)
+                                        .largestValue(0.0)
+                                        .build()
+                        );
 
                 resultDataHolder.results().add(
                         ResultDataHolder.ResultData.builder()
