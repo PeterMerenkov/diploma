@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,5 +43,56 @@ public class MainController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .contentLength(resource.contentLength())
                 .body(resource);
+    }
+
+    @GetMapping("/raw-values-file")
+    public ResponseEntity<ByteArrayResource> getRawValuesFile() throws IOException {
+        ByteArrayResource resource = excelService.getRawValuesFile();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=raw-values.xlsx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(resource.contentLength())
+                .body(resource);
+    }
+
+    @GetMapping("/deltas-file")
+    public ResponseEntity<ByteArrayResource> getDeltasFile() throws IOException {
+        ByteArrayResource resource = excelService.getDeltasFile();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=deltas.xlsx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(resource.contentLength())
+                .body(resource);
+    }
+
+    @GetMapping("/term-sets-file")
+    public ResponseEntity<ByteArrayResource> getTermSetsFile() throws IOException {
+        ByteArrayResource resource = excelService.getTermSetsFile();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=term-sets.xlsx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(resource.contentLength())
+                .body(resource);
+    }
+
+    @PostMapping("/update-raw-values-file")
+    public void updateRawValuesFile(
+            @RequestParam("rawValuesFile") MultipartFile rawValuesFile
+    ) throws IOException {
+        excelService.updateRawValuesFile(rawValuesFile);
+    }
+
+    @PostMapping("/update-deltas-file")
+    public void updateDeltasFile(
+            @RequestParam("deltasFile") MultipartFile deltasFile
+    ) throws IOException {
+        excelService.updateDeltasFile(deltasFile);
+    }
+
+    @PostMapping("/update-term-sets-file")
+    public void updateTermSetsFile(
+            @RequestParam("termSetsFile") MultipartFile termSetsFile
+    ) throws IOException {
+        excelService.updateTermSetsFile(termSetsFile);
     }
 }

@@ -1,11 +1,14 @@
 package ru.merenkov.diploma.service;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.merenkov.diploma.domain.DeltaDataHolder;
@@ -15,6 +18,7 @@ import ru.merenkov.diploma.domain.ValuesDataHolder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -22,11 +26,14 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class ExcelService {
 
     public static final int ROWS_SKIP_COUNT = 1;
     public static final int RAW_VALUES_COLUMNS_SKIP_COUNT = 2;
     public static final int DELTAS_COLUMNS_SKIP_COUNT = 1;
+
+    private final ResourceLoader resourceLoader;
 
     public List<ValuesDataHolder> extractValuesDataFromFile(MultipartFile rawValuesFile) throws IOException {
         Workbook workbook = new XSSFWorkbook(rawValuesFile.getInputStream());
@@ -156,5 +163,38 @@ public class ExcelService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to export results to Excel file", e);
         }
+    }
+
+    public ByteArrayResource getRawValuesFile() throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:file/raw_values.xlsx");
+        byte[] data = Files.readAllBytes(resource.getFile().toPath());
+        return new ByteArrayResource(data);
+    }
+
+    public ByteArrayResource getDeltasFile() throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:file/deltas.xlsx");
+        byte[] data = Files.readAllBytes(resource.getFile().toPath());
+        return new ByteArrayResource(data);
+    }
+
+    public ByteArrayResource getTermSetsFile() throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:file/term_sets.xlsx");
+        byte[] data = Files.readAllBytes(resource.getFile().toPath());
+        return new ByteArrayResource(data);
+    }
+
+    public void updateRawValuesFile(MultipartFile rawValuesFile) throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:file/raw_values.xlsx");
+        Files.write(resource.getFile().toPath(), rawValuesFile.getBytes());
+    }
+
+    public void updateDeltasFile(MultipartFile deltasFile) throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:file/deltas.xlsx");
+        Files.write(resource.getFile().toPath(), deltasFile.getBytes());
+    }
+
+    public void updateTermSetsFile(MultipartFile termSetsFile) throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:file/term_sets.xlsx");
+        Files.write(resource.getFile().toPath(), termSetsFile.getBytes());
     }
 }
