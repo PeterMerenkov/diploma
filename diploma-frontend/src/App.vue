@@ -1,7 +1,7 @@
 <template>
-  <div id="app">
-    <h1 class="main-heading">ДИПЛОМ</h1>
-    <h2 class="sub-heading">Расчет на основе данных их excel файла</h2>
+  <div id="app" class="text-center">
+    <h1 class="display-3 text-primary font-weight-bold">ДИПЛОМ</h1>
+    <h2 class="display-4 text-dark">Расчет на основе excel файлов</h2>
 
     <ExcelFileImportComponent />
   </div>
@@ -19,18 +19,4 @@ export default {
 </script>
 
 <style>
-.main-heading {
-  color: #007BFF;
-  font-size: 52px;
-  text-align: center;
-  font-weight: bold;
-  font-family: 'Arial', sans-serif;
-}
-
-.sub-heading {
-  color: #333;
-  font-size: 36px;
-  text-align: center;
-  font-family: 'Arial', sans-serif;
-}
 </style>

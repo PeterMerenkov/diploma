@@ -35,7 +35,8 @@ public class ExcelService {
 
     private final ResourceLoader resourceLoader;
 
-    public List<ValuesDataHolder> extractValuesDataFromFile(MultipartFile rawValuesFile) throws IOException {
+    public List<ValuesDataHolder> extractValuesDataFromFile() throws IOException {
+        Resource rawValuesFile = resourceLoader.getResource("classpath:file/raw_values.xlsx");
         Workbook workbook = new XSSFWorkbook(rawValuesFile.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
 
@@ -66,7 +67,8 @@ public class ExcelService {
                 .toList();
     }
 
-    public List<DeltaDataHolder> extractDeltasDataFromFile(MultipartFile deltasFile) throws IOException {
+    public List<DeltaDataHolder> extractDeltasDataFromFile() throws IOException {
+        Resource deltasFile = resourceLoader.getResource("classpath:file/deltas.xlsx");
         Workbook workbook = new XSSFWorkbook(deltasFile.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
 
@@ -90,7 +92,8 @@ public class ExcelService {
         return deltasListList;
     }
 
-    public List<TermSetsDataHolder> extractTermSetsDataFromFile(MultipartFile termSetsFile) throws IOException {
+    public List<TermSetsDataHolder> extractTermSetsDataFromFile() throws IOException {
+        Resource termSetsFile = resourceLoader.getResource("classpath:file/term_sets.xlsx");
         Workbook workbook = new XSSFWorkbook(termSetsFile.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
 
@@ -127,19 +130,7 @@ public class ExcelService {
         return termSetsDataHolders;
     }
 
-    private static void skipRows(int skipCount, Iterator<Row> rows) {
-        for (int i = 0; i < skipCount; i++) {
-            rows.next();
-        }
-    }
-
-    private static void skipColumns(int skipCount, Iterator<Cell> cells) {
-        for (int i = 0; i < skipCount; i++) {
-            cells.next();
-        }
-    }
-
-    public ByteArrayResource resultToExcelFile(List<ResultDataHolder> calculateResultData) {
+    public ByteArrayResource convertToResultExcelFile(List<ResultDataHolder> calculateResultData) {
         try {
             Workbook workbook = new XSSFWorkbook();
             Sheet sheet = workbook.createSheet("Results");
@@ -196,5 +187,17 @@ public class ExcelService {
     public void updateTermSetsFile(MultipartFile termSetsFile) throws IOException {
         Resource resource = resourceLoader.getResource("classpath:file/term_sets.xlsx");
         Files.write(resource.getFile().toPath(), termSetsFile.getBytes());
+    }
+
+    private static void skipRows(int skipCount, Iterator<Row> rows) {
+        for (int i = 0; i < skipCount; i++) {
+            rows.next();
+        }
+    }
+
+    private static void skipColumns(int skipCount, Iterator<Cell> cells) {
+        for (int i = 0; i < skipCount; i++) {
+            cells.next();
+        }
     }
 }

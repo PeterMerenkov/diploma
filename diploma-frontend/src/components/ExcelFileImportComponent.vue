@@ -1,32 +1,26 @@
 <!-- Component for import excel file and send it to backend -->
 <template>
-  <div class="calculator">
+  <div class="container mt-5">
     <form @submit.prevent="calculateResult">
       <div class="form-group">
-        <label for="rawDataFile">Выберите файл с данными</label>
-        <input type="file" class="form-control-file" id="rawDataFile" @change="onFileChange1" />
+        <label for="rawDataFile" class="form-label">Сырые данные</label>
+        <input type="file" class="form-control" id="rawDataFile" @change="onRawValuesFileChange" />
+        <button @click="downloadRawValues" class="btn btn-primary mb-2">Скачать с сервера raw_values.xlsx</button>
+        <button v-if="isRawValueFileSelected" @click="updateRawValuesFile" class="btn btn-primary mb-2">Обновить серверный файл raw_values.xlsx</button>
       </div>
       <div class="form-group">
-        <label for="deltasFile">Выберите файл с дельтами</label>
-        <input type="file" class="form-control-file" id="deltasFile" @change="onFileChange2" />
+        <label for="deltasFile" class="form-label">Дельты</label>
+        <input type="file" class="form-control" id="deltasFile" @change="onDeltasFileChange" />
+        <button @click="downloadDeltas" class="btn btn-primary mb-2">Скачать с сервера deltas.xlsx</button>
+        <button v-if="isDeltasFileSelected" @click="updateDeltasFile" class="btn btn-primary mb-2">Обновить серверный файл deltas.xlsx</button>
       </div>
       <div class="form-group">
-        <label for="termFile">Выберите файл с терм множеством</label>
-        <input type="file" class="form-control-file" id="termFile" @change="onFileChange3" />
+        <label for="termFile" class="form-label">Терм-множества</label>
+        <input type="file" class="form-control" id="termFile" @change="onTermSetsFileChange" />
+        <button @click="downloadTermSets" class="btn btn-primary mb-2">Скачать с сервера term_set.xlsx</button>
+        <button v-if="isTermSetsFileSelected" @click="updateTermSetsFile" class="btn btn-primary mb-2">Обновить серверный файл term_set.xlsx</button>
       </div>
-      <button @click="calculateResult" class="btn btn-primary">Отправить</button>
-      <div>
-        <button @click="downloadRawValues" class="btn btn-secondary">Скачать raw_values.xlsx</button>
-        <button @click="updateRawValuesFile" class="btn btn-secondary">Обновить raw_values.xlsx</button>
-      </div>
-      <div>
-        <button @click="downloadDeltas" class="btn btn-secondary">Скачать deltas.xlsx</button>
-        <button @click="updateDeltasFile" class="btn btn-secondary">Обновить deltas.xlsx</button>
-      </div>
-      <div>
-        <button @click="downloadTermSets" class="btn btn-secondary">Скачать term_set.xlsx</button>
-        <button @click="updateTermSetsFile" class="btn btn-secondary">Обновить term_set.xlsx</button>
-      </div>
+      <button @click="calculateResult" class="btn btn-success">Рассчитать</button>
     </form>
   </div>
 </template>
@@ -40,28 +34,29 @@ export default {
   data() {
     return {
       rawValuesFile: null,
+      isRawValueFileSelected: false,
       deltasFile: null,
+      isDeltasFileSelected: false,
       termSetsFile: null,
+      isTermSetsFileSelected: false,
     };
   },
   methods: {
-    onFileChange1(e) {
+    onRawValuesFileChange(e) {
       this.rawValuesFile = e.target.files[0];
+      this.isRawValueFileSelected = true;
     },
-    onFileChange2(e) {
+    onDeltasFileChange(e) {
       this.deltasFile = e.target.files[0];
+      this.isDeltasFileSelected = true;
     },
-    onFileChange3(e) {
+    onTermSetsFileChange(e) {
       this.termSetsFile = e.target.files[0];
+      this.isTermSetsFileSelected = true;
     },
     async calculateResult() {
-      const formData = new FormData();
-      formData.append('rawValuesFile', this.rawValuesFile);
-      formData.append('deltasFile', this.deltasFile);
-      formData.append('termSetsFile', this.termSetsFile);
-      
       try {
-        const response = await axios.post('http://localhost:8081/api/v1/excel', formData, {
+        const response = await axios.post('http://localhost:8081/api/v1/excel', {
           headers: {
             'Content-Type': 'multipart/form-data'
           },
@@ -163,4 +158,13 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  max-width: 600px;
+}
+.form-group {
+  margin-bottom: 1.5rem;
+}
+.form-control {
+  margin-bottom: 0.5rem;
+}
 </style>

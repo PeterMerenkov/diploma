@@ -26,18 +26,15 @@ public class MainController {
     private final CalculateService calculateService;
 
     @PostMapping
-    public ResponseEntity<ByteArrayResource> getExcelContent(
-            @RequestParam("rawValuesFile") MultipartFile rawValuesFile,
-            @RequestParam("deltasFile") MultipartFile deltasFile,
-            @RequestParam("termSetsFile") MultipartFile termSetsFile
-    ) throws IOException {
-        ByteArrayResource resource = excelService.resultToExcelFile(calculateService.calculateResultData(
-                calculateService.calculateFuzzyNumbers(
-                        excelService.extractValuesDataFromFile(rawValuesFile),
-                        excelService.extractDeltasDataFromFile(deltasFile)
-                ),
-                excelService.extractTermSetsDataFromFile(termSetsFile)
-        ));
+    public ResponseEntity<ByteArrayResource> getExcelContent() throws IOException {
+        ByteArrayResource resource = excelService.convertToResultExcelFile(
+                calculateService.calculateResultData(
+                        calculateService.calculateFuzzyNumbers(
+                                excelService.extractValuesDataFromFile(),
+                                excelService.extractDeltasDataFromFile()
+                        ),
+                        excelService.extractTermSetsDataFromFile()
+                ));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=results.xlsx")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)

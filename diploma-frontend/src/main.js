@@ -3,6 +3,7 @@ import App from './App.vue';
 import axios from 'axios';
 import VueKatex from '@hsorby/vue3-katex'
 import 'katex/dist/katex.min.css';
+import 'bootstrap/dist/css/bootstrap.css';
 
 const app = createApp(App);
 
