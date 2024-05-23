@@ -25,7 +25,7 @@ public class MainController {
     private final ExcelService excelService;
     private final CalculateService calculateService;
 
-    @PostMapping
+    @GetMapping
     public ResponseEntity<ByteArrayResource> getExcelContent() throws IOException {
         ByteArrayResource resource = excelService.convertToResultExcelFile(
                 calculateService.calculateResultData(

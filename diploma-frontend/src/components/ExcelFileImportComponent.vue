@@ -20,7 +20,7 @@
         <button @click="downloadTermSets" class="btn btn-primary mb-2">Скачать с сервера term_set.xlsx</button>
         <button v-if="isTermSetsFileSelected" @click="updateTermSetsFile" class="btn btn-primary mb-2">Обновить серверный файл term_set.xlsx</button>
       </div>
-      <button @click="calculateResult" class="btn btn-success">Рассчитать</button>
+      <button type="submit" class="btn btn-success">Рассчитать</button>
     </form>
   </div>
 </template>
@@ -56,15 +56,12 @@ export default {
     },
     async calculateResult() {
       try {
-        const response = await axios.post('http://localhost:8081/api/v1/excel', {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
+        const response = await axios.get('http://localhost:8081/api/v1/excel', {
           responseType: 'blob',
         });
 
         const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(blob, 'file.xlsx');
+        saveAs(blob, 'result.xlsx');
       } catch (error) {
         console.error(error);
       }

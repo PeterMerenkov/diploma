@@ -37,102 +37,107 @@ public class ExcelService {
 
     public List<ValuesDataHolder> extractValuesDataFromFile() throws IOException {
         Resource rawValuesFile = resourceLoader.getResource("classpath:file/raw_values.xlsx");
-        Workbook workbook = new XSSFWorkbook(rawValuesFile.getInputStream());
-        Sheet sheet = workbook.getSheetAt(0);
+        try (Workbook workbook = new XSSFWorkbook(rawValuesFile.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
 
-        Iterator<Row> rows = sheet.iterator();
-        skipRows(ROWS_SKIP_COUNT, rows);
-        Map<Integer, List<Double>> paramIndexToValueListMap = new LinkedHashMap<>();
-        while (rows.hasNext()) {
-            Row row = rows.next();
-            Iterator<Cell> cells = row.iterator();
-            skipColumns(RAW_VALUES_COLUMNS_SKIP_COUNT, cells);
+            Iterator<Row> rows = sheet.iterator();
+            skipRows(ROWS_SKIP_COUNT, rows);
+            Map<Integer, List<Double>> paramIndexToValueListMap = new LinkedHashMap<>();
+            while (rows.hasNext()) {
+                Row row = rows.next();
+                Iterator<Cell> cells = row.iterator();
+                skipColumns(RAW_VALUES_COLUMNS_SKIP_COUNT, cells);
 
-            while (cells.hasNext()) {
-                Cell cell = cells.next();
-                paramIndexToValueListMap
-                        .computeIfAbsent(
-                                cell.getColumnIndex() - RAW_VALUES_COLUMNS_SKIP_COUNT,
-                                k -> new ArrayList<>()
-                        )
-                        .add(cell.getNumericCellValue());
+                while (cells.hasNext()) {
+                    Cell cell = cells.next();
+                    paramIndexToValueListMap
+                            .computeIfAbsent(
+                                    cell.getColumnIndex() - RAW_VALUES_COLUMNS_SKIP_COUNT,
+                                    k -> new ArrayList<>()
+                            )
+                            .add(cell.getNumericCellValue());
+                }
             }
-        }
 
-        return paramIndexToValueListMap.entrySet().stream()
-                .map(entry -> ValuesDataHolder.builder()
-                        .paramIndex(entry.getKey())
-                        .values(entry.getValue())
-                        .build())
-                .toList();
+            return paramIndexToValueListMap.entrySet().stream()
+                    .map(entry -> ValuesDataHolder.builder()
+                            .paramIndex(entry.getKey())
+                            .values(entry.getValue())
+                            .build())
+                    .toList();
+        }
     }
 
     public List<DeltaDataHolder> extractDeltasDataFromFile() throws IOException {
         Resource deltasFile = resourceLoader.getResource("classpath:file/deltas.xlsx");
-        Workbook workbook = new XSSFWorkbook(deltasFile.getInputStream());
-        Sheet sheet = workbook.getSheetAt(0);
+        try (Workbook workbook = new XSSFWorkbook(deltasFile.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
 
-        Iterator<Row> rows = sheet.iterator();
-        skipRows(ROWS_SKIP_COUNT, rows);
-        ArrayList<DeltaDataHolder> deltasListList = new ArrayList<>();
-        while (rows.hasNext()) {
-            Row row = rows.next();
-            Iterator<Cell> cells = row.iterator();
-            skipColumns(DELTAS_COLUMNS_SKIP_COUNT, cells);
+            Iterator<Row> rows = sheet.iterator();
+            skipRows(ROWS_SKIP_COUNT, rows);
+            ArrayList<DeltaDataHolder> deltasListList = new ArrayList<>();
+            while (rows.hasNext()) {
+                Row row = rows.next();
+                Iterator<Cell> cells = row.iterator();
+                skipColumns(DELTAS_COLUMNS_SKIP_COUNT, cells);
 
-            Cell deltaCell1 = cells.next();
-            Cell deltaCell2 = cells.next();
-            deltasListList.add(DeltaDataHolder.builder()
-                            .paramIndex(row.getRowNum() - ROWS_SKIP_COUNT)
-                            .delta1(deltaCell1.getNumericCellValue())
-                            .delta2(deltaCell2.getNumericCellValue())
-                    .build());
+                Cell deltaCell1 = cells.next();
+                Cell deltaCell2 = cells.next();
+                deltasListList.add(DeltaDataHolder.builder()
+                        .paramIndex(row.getRowNum() - ROWS_SKIP_COUNT)
+                        .delta1(deltaCell1.getNumericCellValue())
+                        .delta2(deltaCell2.getNumericCellValue())
+                        .build());
+            }
+
+            return deltasListList;
         }
-
-        return deltasListList;
     }
 
     public List<TermSetsDataHolder> extractTermSetsDataFromFile() throws IOException {
         Resource termSetsFile = resourceLoader.getResource("classpath:file/term_sets.xlsx");
-        Workbook workbook = new XSSFWorkbook(termSetsFile.getInputStream());
-        Sheet sheet = workbook.getSheetAt(0);
+        try (Workbook workbook = new XSSFWorkbook(termSetsFile.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
 
-        Iterator<Row> rows = sheet.iterator();
-        skipRows(ROWS_SKIP_COUNT, rows);
-        List<TermSetsDataHolder> termSetsDataHolders = new ArrayList<>();
-        while (rows.hasNext()) {
-            Row row = rows.next();
-            Iterator<Cell> cells = row.iterator();
-            skipColumns(DELTAS_COLUMNS_SKIP_COUNT, cells);
+            Iterator<Row> rows = sheet.iterator();
+            skipRows(ROWS_SKIP_COUNT, rows);
+            List<TermSetsDataHolder> termSetsDataHolders = new ArrayList<>();
+            while (rows.hasNext()) {
+                Row row = rows.next();
+                Iterator<Cell> cells = row.iterator();
+                skipColumns(DELTAS_COLUMNS_SKIP_COUNT, cells);
 
-            TermSetsDataHolder termSetsDataHolder = TermSetsDataHolder.builder()
-                    .paramIndex(row.getRowNum() - ROWS_SKIP_COUNT)
-                    .termSets(new ArrayList<>())
-                    .build();
-            while (cells.hasNext()) {
-                Cell smallestValueCell = cells.next();
-                Cell largestValueCell = cells.next();
-                Cell nameCell = cells.next();
-                Cell importanceWeightCell = cells.next();
+                TermSetsDataHolder termSetsDataHolder = TermSetsDataHolder.builder()
+                        .paramIndex(row.getRowNum() - ROWS_SKIP_COUNT)
+                        .termSets(new ArrayList<>())
+                        .build();
+                while (cells.hasNext()) {
+                    Cell smallestValueCell = cells.next();
+                    Cell largestValueCell = cells.next();
+                    Cell nameCell = cells.next();
+                    Cell importanceWeightCell = cells.next();
 
-                termSetsDataHolder.termSets().add(
-                        TermSetsDataHolder.TermSetData.builder()
-                                .name(nameCell.getStringCellValue())
-                                .smallestValue(smallestValueCell.getNumericCellValue())
-                                .largestValue(largestValueCell.getNumericCellValue())
-                                .importanceWeight(importanceWeightCell.getNumericCellValue())
-                        .build());
+                    termSetsDataHolder.termSets().add(
+                            TermSetsDataHolder.TermSetData.builder()
+                                    .name(nameCell.getStringCellValue())
+                                    .smallestValue(smallestValueCell.getNumericCellValue())
+                                    .largestValue(largestValueCell.getNumericCellValue())
+                                    .importanceWeight(importanceWeightCell.getNumericCellValue())
+                                    .build());
+                }
+
+                termSetsDataHolders.add(termSetsDataHolder);
             }
 
-            termSetsDataHolders.add(termSetsDataHolder);
+            return termSetsDataHolders;
         }
-
-        return termSetsDataHolders;
     }
 
-    public ByteArrayResource convertToResultExcelFile(List<ResultDataHolder> calculateResultData) {
-        try {
-            Workbook workbook = new XSSFWorkbook();
+    public ByteArrayResource convertToResultExcelFile(List<ResultDataHolder> calculateResultData) throws IOException {
+        try (
+                Workbook workbook = new XSSFWorkbook();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
+        ) {
             Sheet sheet = workbook.createSheet("Results");
 
             int rowIndex = 0;
@@ -147,12 +152,9 @@ public class ExcelService {
                 }
             }
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
 
             return new ByteArrayResource(outputStream.toByteArray());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to export results to Excel file", e);
         }
     }
 
