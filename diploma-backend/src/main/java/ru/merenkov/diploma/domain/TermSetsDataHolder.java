@@ -11,6 +11,7 @@ public record TermSetsDataHolder(
 ) {
     @Builder
     public record TermSetData(
+            Integer index,
             String name,
             Double smallestValue,
             Double largestValue,

@@ -6,13 +6,7 @@ import java.util.List;
 
 @Builder
 public record ResultDataHolder(
-        int paramIndex,
-        List<ResultData> results
+        ConditionDataHolder conditionDataHolder,
+        List<FuzzNumTermSetHolder> fuzzNumTermSetHolders
 ) {
-    @Builder
-    public record ResultData(
-            FuzzyNumbersHolder.FuzzyNumber fuzzyNumber,
-            TermSetsDataHolder.TermSetData termSet
-    ) {
-    }
 }

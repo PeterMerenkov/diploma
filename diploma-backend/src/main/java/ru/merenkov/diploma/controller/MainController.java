@@ -28,7 +28,7 @@ public class MainController {
     @GetMapping
     public ResponseEntity<ByteArrayResource> getExcelContent() throws IOException {
         ByteArrayResource resource = excelService.convertToResultExcelFile(
-                calculateService.calculateResultData(
+                calculateService.getFuzzNumTermSetPairs(
                         calculateService.calculateFuzzyNumbers(
                                 excelService.extractValuesDataFromFile(),
                                 excelService.extractDeltasDataFromFile()

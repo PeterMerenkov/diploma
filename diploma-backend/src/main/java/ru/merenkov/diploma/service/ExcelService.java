@@ -12,7 +12,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.merenkov.diploma.domain.DeltaDataHolder;
-import ru.merenkov.diploma.domain.ResultDataHolder;
+import ru.merenkov.diploma.domain.FuzzNumTermSetHolder;
 import ru.merenkov.diploma.domain.TermSetsDataHolder;
 import ru.merenkov.diploma.domain.ValuesDataHolder;
 
@@ -133,7 +133,7 @@ public class ExcelService {
         }
     }
 
-    public ByteArrayResource convertToResultExcelFile(List<ResultDataHolder> calculateResultData) throws IOException {
+    public ByteArrayResource convertToResultExcelFile(List<FuzzNumTermSetHolder> calculateResultData) throws IOException {
         try (
                 Workbook workbook = new XSSFWorkbook();
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
@@ -141,11 +141,11 @@ public class ExcelService {
             Sheet sheet = workbook.createSheet("Results");
 
             int rowIndex = 0;
-            for (ResultDataHolder resultDataHolder : calculateResultData) {
-                for (ResultDataHolder.ResultData resultData : resultDataHolder.results()) {
+            for (FuzzNumTermSetHolder fuzzNumTermSetHolder : calculateResultData) {
+                for (FuzzNumTermSetHolder.ResultData resultData : fuzzNumTermSetHolder.results()) {
                     Row row = sheet.createRow(rowIndex++);
 
-                    row.createCell(0).setCellValue(resultDataHolder.paramIndex());
+                    row.createCell(0).setCellValue(fuzzNumTermSetHolder.paramIndex());
                     row.createCell(1).setCellValue(resultData.fuzzyNumber().value().doubleValue());
                     row.createCell(2).setCellValue(resultData.termSet().name());
                     row.createCell(3).setCellValue(resultData.termSet().importanceWeight());

@@ -1,15 +1,11 @@
 package ru.merenkov.diploma.service;
 
 import org.springframework.stereotype.Service;
-import ru.merenkov.diploma.domain.DeltaDataHolder;
-import ru.merenkov.diploma.domain.FuzzyNumbersHolder;
-import ru.merenkov.diploma.domain.ResultDataHolder;
-import ru.merenkov.diploma.domain.TermSetsDataHolder;
-import ru.merenkov.diploma.domain.ValuesDataHolder;
+import ru.merenkov.diploma.domain.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CalculateService {
@@ -26,13 +22,13 @@ public class CalculateService {
                     .paramIndex(i)
                     .fuzzyNumbers(new ArrayList<>())
                     .build();
-            for (Double value : valuesDataHolder.values()) {
+            for (ValuesDataHolder.ValueData valueData : valuesDataHolder.values()) {
                 fuzzyNumbersHolder.fuzzyNumbers().add(
                         FuzzyNumbersHolder.FuzzyNumber.builder()
-                                .smallestValue(new BigDecimal(value)
+                                .smallestValue(BigDecimal.valueOf(valueData.value())
                                         .subtract(BigDecimal.valueOf(deltaDataHolder.delta1())))
-                                .value(new BigDecimal(value))
-                                .largestValue(new BigDecimal(value)
+                                .value(BigDecimal.valueOf(valueData.value()))
+                                .largestValue(BigDecimal.valueOf(valueData.value())
                                         .add(BigDecimal.valueOf(deltaDataHolder.delta2())))
                                 .build()
                 );
@@ -43,15 +39,15 @@ public class CalculateService {
         return result;
     }
 
-    public List<ResultDataHolder> calculateResultData(
+    public List<FuzzNumTermSetHolder> getFuzzNumTermSetPairs(
             List<FuzzyNumbersHolder> fuzzyNumbersHolders,
             List<TermSetsDataHolder> termSetsDataHolders
     ) {
-        List<ResultDataHolder> resultDataHolders = new ArrayList<>();
+        List<FuzzNumTermSetHolder> fuzzNumTermSetHolders = new ArrayList<>();
         for (int i = 0; i < fuzzyNumbersHolders.size(); i++) {
             FuzzyNumbersHolder fuzzyNumbersHolder = fuzzyNumbersHolders.get(i);
             TermSetsDataHolder termSetsDataHolder = termSetsDataHolders.get(i);
-            ResultDataHolder resultDataHolder = ResultDataHolder.builder()
+            FuzzNumTermSetHolder fuzzNumTermSetHolder = FuzzNumTermSetHolder.builder()
                     .paramIndex(i)
                     .results(new ArrayList<>())
                     .build();
@@ -79,16 +75,46 @@ public class CalculateService {
                                         .build()
                         );
 
-                resultDataHolder.results().add(
-                        ResultDataHolder.ResultData.builder()
+                fuzzNumTermSetHolder.results().add(
+                        FuzzNumTermSetHolder.ResultData.builder()
                                 .fuzzyNumber(fuzzyNumber)
                                 .termSet(suitableTermSet)
                                 .build()
                 );
             }
-            resultDataHolders.add(resultDataHolder);
+            fuzzNumTermSetHolders.add(fuzzNumTermSetHolder);
         }
         
-        return resultDataHolders;
+        return fuzzNumTermSetHolders;
+    }
+
+    public List<ResultDataHolder> calculateResult(
+            List<FuzzNumTermSetHolder> fuzzNumTermSetHolders,
+            ConditionDataHolder condition
+    ) {
+        ArrayList<ResultDataHolder> result = new ArrayList<>();
+        condition.paramTermSetIndexPairs().forEach(pair -> {
+            List<FuzzNumTermSetHolder> holders = new ArrayList<>();
+            fuzzNumTermSetHolders.stream()
+                    .filter(ft -> Objects.equals(ft.paramIndex(), pair.paramIndex()))
+                    .forEach(ft -> {
+                        List<FuzzNumTermSetHolder.ResultData> resultDataList = ft.results().stream()
+                                .filter(rd -> Objects.equals(rd.termSet().index(), pair.termSetIndex()))
+                                .collect(Collectors.toList());
+                        holders.add(FuzzNumTermSetHolder.builder()
+                                .paramIndex(ft.paramIndex())
+                                .results(resultDataList)
+                                .build());
+
+                    });
+
+            ResultDataHolder rd = ResultDataHolder.builder()
+                    .conditionDataHolder(condition)
+                    .fuzzNumTermSetHolders(holders)
+                    .build();
+            result.add(rd);
+        });
+
+        return result;
     }
 }
