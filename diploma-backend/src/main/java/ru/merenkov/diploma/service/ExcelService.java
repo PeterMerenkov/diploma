@@ -138,10 +138,11 @@ public class ExcelService {
 
                     termSetsDataHolder.termSets().add(
                             TermSetsDataHolder.TermSetData.builder()
+                                    .index(row.getRowNum() - ROWS_SKIP_COUNT)
                                     .name(nameCell.getStringCellValue())
+                                    .importanceWeight(importanceWeightCell.getNumericCellValue())
                                     .smallestValue(smallestValueCell.getNumericCellValue())
                                     .largestValue(largestValueCell.getNumericCellValue())
-                                    .importanceWeight(importanceWeightCell.getNumericCellValue())
                                     .build());
                 }
 

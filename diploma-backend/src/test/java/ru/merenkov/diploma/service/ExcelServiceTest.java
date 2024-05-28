@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import ru.merenkov.diploma.domain.DeltaDataHolder;
+import ru.merenkov.diploma.domain.TermSetsDataHolder;
 import ru.merenkov.diploma.domain.ValuesDataHolder;
 
 import java.io.IOException;
@@ -66,6 +67,29 @@ class ExcelServiceTest {
             for (DeltaDataHolder valuesDataHolder : result) {
                 assertNotNull(valuesDataHolder.delta1());
                 assertNotNull(valuesDataHolder.delta2());
+            }
+        }
+    }
+
+    @Test
+    void extractTermSetsDataFromFile() throws IOException {
+        Resource mockResource = Mockito.mock(Resource.class);
+        when(resourceLoaderMocked.getResource(anyString())).thenReturn(mockResource);
+
+        Path path = Paths.get("src/test/resources/file/term_sets.xlsx");
+        try (InputStream fileInputStream = Files.newInputStream(path)) {
+            when(mockResource.getInputStream()).thenReturn(fileInputStream);
+
+            List<TermSetsDataHolder> result = excelService.extractTermSetsDataFromFile();
+
+            for (TermSetsDataHolder termSetsDataHolder : result) {
+                for (TermSetsDataHolder.TermSetData termSetData : termSetsDataHolder.termSets()) {
+                    assertNotNull(termSetData.index());
+                    assertNotNull(termSetData.name());
+                    assertNotNull(termSetData.importanceWeight());
+                    assertNotNull(termSetData.smallestValue());
+                    assertNotNull(termSetData.largestValue());
+                }
             }
         }
     }
