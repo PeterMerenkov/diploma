@@ -1,6 +1,7 @@
 package ru.merenkov.diploma.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -19,6 +20,8 @@ import ru.merenkov.diploma.domain.ValuesDataHolder;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,7 +33,7 @@ import java.util.Map;
 public class ExcelService {
 
     public static final int ROWS_SKIP_COUNT = 1;
-    public static final int RAW_VALUES_COLUMNS_SKIP_COUNT = 2;
+    public static final int RAW_VALUES_BEFORE_PARAM_NAMES_COLUMNS_COUNT = 2;
     public static final int DELTAS_COLUMNS_SKIP_COUNT = 1;
 
     private final ResourceLoader resourceLoader;
@@ -40,29 +43,49 @@ public class ExcelService {
         try (Workbook workbook = new XSSFWorkbook(rawValuesFile.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
 
+            Map<Integer, Pair<String, List<ValuesDataHolder.ValueData>>> paramIndexToValueListMap = new LinkedHashMap<>();
+
             Iterator<Row> rows = sheet.iterator();
-            skipRows(ROWS_SKIP_COUNT, rows);
-            Map<Integer, List<Double>> paramIndexToValueListMap = new LinkedHashMap<>();
+            Row titleRow = rows.next();
+            Iterator<Cell> titleCells = titleRow.iterator();
+            skipColumns(RAW_VALUES_BEFORE_PARAM_NAMES_COLUMNS_COUNT, titleCells);
+            while (titleCells.hasNext()) {
+                Cell cell = titleCells.next();
+                String paramName = cell.getStringCellValue();
+                paramIndexToValueListMap.put(cell.getColumnIndex() - RAW_VALUES_BEFORE_PARAM_NAMES_COLUMNS_COUNT,
+                        Pair.create(paramName, new ArrayList<>()));
+            }
+
             while (rows.hasNext()) {
                 Row row = rows.next();
                 Iterator<Cell> cells = row.iterator();
-                skipColumns(RAW_VALUES_COLUMNS_SKIP_COUNT, cells);
+
+                Cell dateTimeCell = cells.next();
+                LocalDateTime dateTimeCellValue = LocalDateTime.parse(dateTimeCell.getStringCellValue(),
+                        DateTimeFormatter.ofPattern("dd.MM.yyyy H:mm:ss"));
+                skipColumns(1, cells);
 
                 while (cells.hasNext()) {
                     Cell cell = cells.next();
+                    String paramName = "paramName";
                     paramIndexToValueListMap
                             .computeIfAbsent(
-                                    cell.getColumnIndex() - RAW_VALUES_COLUMNS_SKIP_COUNT,
-                                    k -> new ArrayList<>()
+                                    cell.getColumnIndex() - RAW_VALUES_BEFORE_PARAM_NAMES_COLUMNS_COUNT,
+                                    k -> Pair.create(paramName, new ArrayList<>())
                             )
-                            .add(cell.getNumericCellValue());
+                            .getSecond()
+                            .add(new ValuesDataHolder.ValueData(
+                                    dateTimeCellValue,
+                                    cell.getNumericCellValue()
+                            ));
                 }
             }
 
             return paramIndexToValueListMap.entrySet().stream()
                     .map(entry -> ValuesDataHolder.builder()
                             .paramIndex(entry.getKey())
-                            .values(entry.getValue())
+                            .paramName(entry.getValue().getFirst())
+                            .values(entry.getValue().getSecond())
                             .build())
                     .toList();
         }
