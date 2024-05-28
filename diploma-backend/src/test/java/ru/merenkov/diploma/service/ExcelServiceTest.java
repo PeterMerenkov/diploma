@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import ru.merenkov.diploma.domain.DeltaDataHolder;
 import ru.merenkov.diploma.domain.ValuesDataHolder;
 
 import java.io.IOException;
@@ -47,6 +48,24 @@ class ExcelServiceTest {
                     assertNotNull(valueData.dateTime());
                     assertNotNull(valueData.value());
                 }
+            }
+        }
+    }
+
+    @Test
+    void extractDeltasDataFromFile() throws IOException {
+        Resource mockResource = Mockito.mock(Resource.class);
+        when(resourceLoaderMocked.getResource(anyString())).thenReturn(mockResource);
+
+        Path path = Paths.get("src/test/resources/file/deltas.xlsx");
+        try (InputStream fileInputStream = Files.newInputStream(path)) {
+            when(mockResource.getInputStream()).thenReturn(fileInputStream);
+
+            List<DeltaDataHolder> result = excelService.extractDeltasDataFromFile();
+
+            for (DeltaDataHolder valuesDataHolder : result) {
+                assertNotNull(valuesDataHolder.delta1());
+                assertNotNull(valuesDataHolder.delta2());
             }
         }
     }
