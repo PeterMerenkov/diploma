@@ -67,12 +67,8 @@ public class ExcelService {
 
                 while (cells.hasNext()) {
                     Cell cell = cells.next();
-                    String paramName = "paramName";
                     paramIndexToValueListMap
-                            .computeIfAbsent(
-                                    cell.getColumnIndex() - RAW_VALUES_BEFORE_PARAM_NAMES_COLUMNS_COUNT,
-                                    k -> Pair.create(paramName, new ArrayList<>())
-                            )
+                            .get(cell.getColumnIndex() - RAW_VALUES_BEFORE_PARAM_NAMES_COLUMNS_COUNT)
                             .getSecond()
                             .add(new ValuesDataHolder.ValueData(
                                     dateTimeCellValue,
