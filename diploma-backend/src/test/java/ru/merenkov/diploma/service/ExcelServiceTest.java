@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import ru.merenkov.diploma.domain.ConditionDataHolder;
 import ru.merenkov.diploma.domain.DeltaDataHolder;
 import ru.merenkov.diploma.domain.TermSetsDataHolder;
 import ru.merenkov.diploma.domain.ValuesDataHolder;
@@ -90,6 +91,27 @@ class ExcelServiceTest {
                     assertNotNull(termSetData.smallestValue());
                     assertNotNull(termSetData.largestValue());
                 }
+            }
+        }
+    }
+
+    @Test
+    void extractConditionDataFromFile() throws IOException {
+        Resource mockResource = Mockito.mock(Resource.class);
+        when(resourceLoaderMocked.getResource(anyString())).thenReturn(mockResource);
+
+        Path path = Paths.get("src/test/resources/file/conditions.xlsx");
+        try (InputStream fileInputStream = Files.newInputStream(path)) {
+            when(mockResource.getInputStream()).thenReturn(fileInputStream);
+
+            List<ConditionDataHolder> result = excelService.extractConditionDataFromFile();
+
+            for (ConditionDataHolder conditionDataHolder : result) {
+                for (ConditionDataHolder.ParamTermSetIndexPair paramTermSetIndexPair : conditionDataHolder.paramTermSetIndexPairs()) {
+                    assertNotNull(paramTermSetIndexPair.paramIndex());
+                    assertNotNull(paramTermSetIndexPair.termSetIndex());
+                }
+                assertNotNull(conditionDataHolder.result());
             }
         }
     }

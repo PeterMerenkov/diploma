@@ -12,6 +12,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import ru.merenkov.diploma.domain.ConditionDataHolder;
 import ru.merenkov.diploma.domain.DeltaDataHolder;
 import ru.merenkov.diploma.domain.FuzzNumTermSetHolder;
 import ru.merenkov.diploma.domain.TermSetsDataHolder;
@@ -150,6 +151,51 @@ public class ExcelService {
             }
 
             return termSetsDataHolders;
+        }
+    }
+
+    public List<ConditionDataHolder> extractConditionDataFromFile() throws IOException {
+        Resource conditionFile = resourceLoader.getResource("classpath:file/condition.xlsx");
+        try (Workbook workbook = new XSSFWorkbook(conditionFile.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            Iterator<Row> rows = sheet.iterator();
+            List<ConditionDataHolder> conditionDataHolders = new ArrayList<>();
+            while (rows.hasNext()) {
+                Row row = rows.next();
+                Iterator<Cell> paramIndexCells = row.iterator();
+                skipColumns(DELTAS_COLUMNS_SKIP_COUNT, paramIndexCells);
+                List<Integer> paramIndexes = new ArrayList<>();
+                while (paramIndexCells.hasNext()) {
+                    Cell cell = paramIndexCells.next();
+                    paramIndexes.add((int) cell.getNumericCellValue());
+                }
+
+                row = rows.next();
+                Iterator<Cell> termSetIndexCells = row.iterator();
+                skipColumns(DELTAS_COLUMNS_SKIP_COUNT, termSetIndexCells);
+                List<Integer> termSetIndexes = new ArrayList<>();
+                while (termSetIndexCells.hasNext()) {
+                    Cell cell = termSetIndexCells.next();
+                    termSetIndexes.add((int) cell.getNumericCellValue());
+                }
+
+                List<ConditionDataHolder.ParamTermSetIndexPair> paramTermSetIndexPairs = new ArrayList<>();
+                for (int i = 0; i < paramIndexes.size(); i++) {
+                    paramTermSetIndexPairs.add(new ConditionDataHolder.ParamTermSetIndexPair(paramIndexes.get(i),
+                            termSetIndexes.get(i)));
+                }
+
+                row = rows.next();
+                Iterator<Cell> resultCells = row.iterator();
+                skipColumns(DELTAS_COLUMNS_SKIP_COUNT, resultCells);
+                Cell resultCell = resultCells.next();
+
+                conditionDataHolders.add(new ConditionDataHolder(paramTermSetIndexPairs,
+                        resultCell.getStringCellValue()));
+            }
+
+            return conditionDataHolders;
         }
     }
 

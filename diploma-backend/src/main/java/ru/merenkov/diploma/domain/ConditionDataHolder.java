@@ -4,8 +4,6 @@ import java.util.List;
 
 public record ConditionDataHolder(
         List<ParamTermSetIndexPair> paramTermSetIndexPairs,
-//        List<Integer> paramIndexes,
-//        List<Integer> termSetIndexes,
         String result
 ) {
 
@@ -13,6 +11,5 @@ public record ConditionDataHolder(
         Integer paramIndex,
         Integer termSetIndex
     ) {
-
     }
 }
