@@ -1,11 +1,20 @@
 package ru.merenkov.diploma.service;
 
+import javafx.util.Pair;
 import org.springframework.stereotype.Service;
-import ru.merenkov.diploma.domain.*;
+import ru.merenkov.diploma.domain.ConditionDataHolder;
+import ru.merenkov.diploma.domain.DeltaDataHolder;
+import ru.merenkov.diploma.domain.FuzzNumTermSetHolder;
+import ru.merenkov.diploma.domain.FuzzyNumbersHolder;
+import ru.merenkov.diploma.domain.TermSetsDataHolder;
+import ru.merenkov.diploma.domain.ValuesDataHolder;
 
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class CalculateService {
@@ -88,32 +97,32 @@ public class CalculateService {
         return fuzzNumTermSetHolders;
     }
 
-    public List<ResultDataHolder> calculateResult(
+    public Map<LocalDateTime, List<Pair<Integer, FuzzNumTermSetHolder.ResultData>>> calculateResult(
             List<FuzzNumTermSetHolder> fuzzNumTermSetHolders,
-            ConditionDataHolder condition
+            List<ConditionDataHolder> conditions
     ) {
-        ArrayList<ResultDataHolder> result = new ArrayList<>();
-        condition.paramTermSetIndexPairs().forEach(pair -> {
-            List<FuzzNumTermSetHolder> holders = new ArrayList<>();
-            fuzzNumTermSetHolders.stream()
-                    .filter(ft -> Objects.equals(ft.paramIndex(), pair.paramIndex()))
-                    .forEach(ft -> {
-                        List<FuzzNumTermSetHolder.ResultData> resultDataList = ft.results().stream()
-                                .filter(rd -> Objects.equals(rd.termSet().index(), pair.termSetIndex()))
-                                .collect(Collectors.toList());
-                        holders.add(FuzzNumTermSetHolder.builder()
-                                .paramIndex(ft.paramIndex())
-                                .results(resultDataList)
-                                .build());
 
-                    });
+        Map<LocalDateTime, List<Pair<Integer, FuzzNumTermSetHolder.ResultData>>> result = new HashMap<>();
+        for (FuzzNumTermSetHolder fuzzNumTermSetHolder : fuzzNumTermSetHolders) {
+            for (FuzzNumTermSetHolder.ResultData resultData : fuzzNumTermSetHolder.results()) {
+                result.computeIfAbsent(resultData.fuzzyNumber().dateTime(),
+                                k -> new ArrayList<>())
+                        .add(new Pair<>(fuzzNumTermSetHolder.paramIndex(), resultData));
+            }
+        }
 
-            ResultDataHolder rd = ResultDataHolder.builder()
-                    .conditionDataHolder(condition)
-                    .fuzzNumTermSetHolders(holders)
-                    .build();
-            result.add(rd);
-        });
+//        result.entrySet().stream()
+//                .filter(entry -> {
+//                    conditions.stream()
+//                            .map(ConditionDataHolder::paramTermSetIndexPairs)
+//                            .allMatch(indexPairs -> {
+//                                for (Pair<Integer, FuzzNumTermSetHolder.ResultData> indexToDataPair : entry.getValue()) {
+//                                    if (indexPairs.contains(new ConditionDataHolder.ParamTermSetIndexPair(indexToDataPair.getKey(), indexToDataPair.getValue().termSet().index()))) {
+//                                        collect.add(indexToDataPair);
+//                                    }
+//                                }
+//                            });
+//                })
 
         return result;
     }

@@ -6,7 +6,7 @@ import java.util.List;
 
 @Builder
 public record ResultDataHolder(
-        ConditionDataHolder conditionDataHolder,
+        List<ConditionDataHolder> conditionDataHolder,
         List<FuzzNumTermSetHolder> fuzzNumTermSetHolders
 ) {
 }
