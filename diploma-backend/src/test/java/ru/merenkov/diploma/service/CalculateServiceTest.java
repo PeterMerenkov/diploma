@@ -133,7 +133,7 @@ class CalculateServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(2, result.size());
+        assertEquals(1, result.size());
         // further assertions on result
     }
 
@@ -264,7 +264,7 @@ class CalculateServiceTest {
                                 .build(),
                         ConditionDataHolder.ParamTermSetIndexPair.builder()
                                 .paramIndex(2)
-                                .termSetIndex(2)
+                                .termSetIndex(1)
                                 .build()
                 ))
                 .result("testResult1")

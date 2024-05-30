@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CalculateService {
@@ -111,18 +112,25 @@ public class CalculateService {
             }
         }
 
-//        result.entrySet().stream()
-//                .filter(entry -> {
-//                    conditions.stream()
-//                            .map(ConditionDataHolder::paramTermSetIndexPairs)
-//                            .allMatch(indexPairs -> {
-//                                for (Pair<Integer, FuzzNumTermSetHolder.ResultData> indexToDataPair : entry.getValue()) {
-//                                    if (indexPairs.contains(new ConditionDataHolder.ParamTermSetIndexPair(indexToDataPair.getKey(), indexToDataPair.getValue().termSet().index()))) {
-//                                        collect.add(indexToDataPair);
-//                                    }
-//                                }
-//                            });
-//                })
+        result = result.entrySet().stream()
+                .filter(entry -> {
+                    return conditions.stream()
+                            .map(ConditionDataHolder::paramTermSetIndexPairs)
+                            .allMatch(indexPairs -> {
+                                List<Pair<Integer, FuzzNumTermSetHolder.ResultData>> collect = new ArrayList<>();
+                                for (Pair<Integer, FuzzNumTermSetHolder.ResultData> indexToDataPair : entry.getValue()) {
+                                    if (indexPairs.contains(new ConditionDataHolder.ParamTermSetIndexPair(indexToDataPair.getKey(), indexToDataPair.getValue().termSet().index()))) {
+                                        collect.add(indexToDataPair);
+                                    }
+                                }
+
+                                List<Integer> conditionTermSetIndexListSorted = indexPairs.stream().map(x -> x.termSetIndex()).sorted().toList();
+                                List<Integer> valueTermSetIndexListSorted = collect.stream().map(x -> x.getValue().termSet().index()).sorted().toList();
+
+                                return conditionTermSetIndexListSorted.equals(valueTermSetIndexListSorted);
+                            });
+                })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         return result;
     }
