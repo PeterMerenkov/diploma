@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.merenkov.diploma.domain.ConditionDataHolder;
 import ru.merenkov.diploma.domain.DeltaDataHolder;
 import ru.merenkov.diploma.domain.FuzzNumTermSetHolder;
+import ru.merenkov.diploma.domain.ResultDataHolder;
 import ru.merenkov.diploma.domain.TermSetsDataHolder;
 import ru.merenkov.diploma.domain.ValuesDataHolder;
 
@@ -199,7 +200,7 @@ public class ExcelService {
         }
     }
 
-    public ByteArrayResource convertToResultExcelFile(List<FuzzNumTermSetHolder> calculateResultData) throws IOException {
+    public ByteArrayResource convertToResultExcelFile(ResultDataHolder resultDataHolder) throws IOException {
         try (
                 Workbook workbook = new XSSFWorkbook();
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
@@ -207,14 +208,42 @@ public class ExcelService {
             Sheet sheet = workbook.createSheet("Results");
 
             int rowIndex = 0;
-            for (FuzzNumTermSetHolder fuzzNumTermSetHolder : calculateResultData) {
-                for (FuzzNumTermSetHolder.ResultData resultData : fuzzNumTermSetHolder.results()) {
-                    Row row = sheet.createRow(rowIndex++);
+            for (ConditionDataHolder conditionDataHolder : resultDataHolder.conditionDataHolder()) {
+                Row row = sheet.createRow(rowIndex++);
+                Cell cell = row.createCell(0);
+                cell.setCellValue("Условие:");
+                cell = row.createCell(1);
+                cell.setCellValue(conditionDataHolder.paramTermSetIndexPairs().stream()
+                        .map(pair -> pair.paramIndex() + " - " + pair.termSetIndex())
+                        .reduce((s1, s2) -> s1 + ", " + s2)
+                        .orElse(""));
+            }
 
-                    row.createCell(0).setCellValue(fuzzNumTermSetHolder.paramIndex());
-                    row.createCell(1).setCellValue(resultData.fuzzyNumber().value().doubleValue());
-                    row.createCell(2).setCellValue(resultData.termSet().name());
-                    row.createCell(3).setCellValue(resultData.termSet().importanceWeight());
+            for (Map.Entry<LocalDateTime, List<javafx.util.Pair<Integer, FuzzNumTermSetHolder.ResultData>>> localDateTimeListEntry : resultDataHolder.timeListMap().entrySet()) {
+                Row row = sheet.createRow(rowIndex++);
+                Cell cell = row.createCell(0);
+                cell.setCellValue("Время:");
+                cell = row.createCell(1);
+                cell.setCellValue(localDateTimeListEntry.getKey().format(DateTimeFormatter.ofPattern("dd.MM.yyyy H:mm:ss")));
+
+                for (javafx.util.Pair<Integer, FuzzNumTermSetHolder.ResultData> integerResultDataPair : localDateTimeListEntry.getValue()) {
+                    row = sheet.createRow(rowIndex++);
+                    cell = row.createCell(0);
+                    cell.setCellValue("Параметр:");
+                    cell = row.createCell(1);
+                    cell.setCellValue(integerResultDataPair.getKey());
+
+                    row = sheet.createRow(rowIndex++);
+                    cell = row.createCell(0);
+                    cell.setCellValue("Результат:");
+                    cell = row.createCell(1);
+                    cell.setCellValue(integerResultDataPair.getValue().fuzzyNumber().toString());
+
+                    row = sheet.createRow(rowIndex++);
+                    cell = row.createCell(0);
+                    cell.setCellValue("Терм-множество:");
+                    cell = row.createCell(1);
+                    cell.setCellValue(integerResultDataPair.getValue().termSet().name());
                 }
             }
 

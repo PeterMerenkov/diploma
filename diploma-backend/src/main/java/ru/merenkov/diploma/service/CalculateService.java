@@ -6,6 +6,7 @@ import ru.merenkov.diploma.domain.ConditionDataHolder;
 import ru.merenkov.diploma.domain.DeltaDataHolder;
 import ru.merenkov.diploma.domain.FuzzNumTermSetHolder;
 import ru.merenkov.diploma.domain.FuzzyNumbersHolder;
+import ru.merenkov.diploma.domain.ResultDataHolder;
 import ru.merenkov.diploma.domain.TermSetsDataHolder;
 import ru.merenkov.diploma.domain.ValuesDataHolder;
 
@@ -98,7 +99,7 @@ public class CalculateService {
         return fuzzNumTermSetHolders;
     }
 
-    public Map<LocalDateTime, List<Pair<Integer, FuzzNumTermSetHolder.ResultData>>> calculateResult(
+    public ResultDataHolder calculateResult(
             List<FuzzNumTermSetHolder> fuzzNumTermSetHolders,
             List<ConditionDataHolder> conditions
     ) {
@@ -132,6 +133,6 @@ public class CalculateService {
                 })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        return result;
+        return new ResultDataHolder(conditions, result);
     }
 }

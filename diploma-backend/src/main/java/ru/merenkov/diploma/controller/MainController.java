@@ -28,13 +28,14 @@ public class MainController {
     @GetMapping
     public ResponseEntity<ByteArrayResource> getExcelContent() throws IOException {
         ByteArrayResource resource = excelService.convertToResultExcelFile(
-                calculateService.getFuzzNumTermSetPairs(
+                calculateService.calculateResult(calculateService.getFuzzNumTermSetPairs(
                         calculateService.calculateFuzzyNumbers(
                                 excelService.extractValuesDataFromFile(),
                                 excelService.extractDeltasDataFromFile()
                         ),
                         excelService.extractTermSetsDataFromFile()
-                ));
+                ),
+                        excelService.extractConditionDataFromFile()));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=results.xlsx")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)

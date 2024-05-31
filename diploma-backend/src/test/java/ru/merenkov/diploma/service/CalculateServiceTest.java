@@ -1,18 +1,17 @@
 package ru.merenkov.diploma.service;
 
-import javafx.util.Pair;
 import org.junit.jupiter.api.Test;
 import ru.merenkov.diploma.domain.ConditionDataHolder;
 import ru.merenkov.diploma.domain.DeltaDataHolder;
 import ru.merenkov.diploma.domain.FuzzNumTermSetHolder;
 import ru.merenkov.diploma.domain.FuzzyNumbersHolder;
+import ru.merenkov.diploma.domain.ResultDataHolder;
 import ru.merenkov.diploma.domain.TermSetsDataHolder;
 import ru.merenkov.diploma.domain.ValuesDataHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -129,11 +128,11 @@ class CalculateServiceTest {
 
         // Act
         CalculateService calculateService = new CalculateService();
-        Map<LocalDateTime, List<Pair<Integer, FuzzNumTermSetHolder.ResultData>>> result = calculateService.calculateResult(fuzzNumTermSetHolderList, conditionDataHolderList);
+        ResultDataHolder result = calculateService.calculateResult(fuzzNumTermSetHolderList, conditionDataHolderList);
 
         // Assert
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.timeListMap().size());
         // further assertions on result
     }
 

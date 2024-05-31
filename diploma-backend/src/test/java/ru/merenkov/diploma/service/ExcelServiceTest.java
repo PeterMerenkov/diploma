@@ -1,23 +1,30 @@
 package ru.merenkov.diploma.service;
 
+import org.apache.commons.compress.utils.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import ru.merenkov.diploma.domain.ConditionDataHolder;
 import ru.merenkov.diploma.domain.DeltaDataHolder;
+import ru.merenkov.diploma.domain.FuzzNumTermSetHolder;
+import ru.merenkov.diploma.domain.FuzzyNumbersHolder;
+import ru.merenkov.diploma.domain.ResultDataHolder;
 import ru.merenkov.diploma.domain.TermSetsDataHolder;
 import ru.merenkov.diploma.domain.ValuesDataHolder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -114,5 +121,164 @@ class ExcelServiceTest {
                 assertNotNull(conditionDataHolder.result());
             }
         }
+    }
+
+    @Test
+    void convertToResultExcelFile() throws IOException {
+
+        List<FuzzNumTermSetHolder> fuzzNumTermSetHolderList = getTestFuzzNumTermSetHolders();
+        List<ConditionDataHolder> conditionDataHolderList = getTestConditionDataHolders();
+
+        CalculateService calculateService = new CalculateService();
+        ResultDataHolder resultDataHolder = calculateService.calculateResult(fuzzNumTermSetHolderList, conditionDataHolderList);
+
+        ByteArrayResource result = excelService.convertToResultExcelFile(resultDataHolder);
+        try (InputStream inputStream = result.getInputStream()) {
+            Path outputPath = Paths.get("src/test/resources/file/conditions-results.xlsx");
+            Files.write(outputPath, IOUtils.toByteArray(inputStream));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        // Assert
+        assertNotNull(result);
+    }
+
+    private static List<FuzzNumTermSetHolder> getTestFuzzNumTermSetHolders() {
+        LocalDateTime nowDateTime = LocalDateTime.now();
+        FuzzNumTermSetHolder fuzzNumTermSetHolder1 = FuzzNumTermSetHolder.builder()
+                .paramIndex(0)
+                .results(List.of(
+                        FuzzNumTermSetHolder.ResultData.builder()
+                                .fuzzyNumber(FuzzyNumbersHolder.FuzzyNumber.builder()
+                                        .dateTime(nowDateTime)
+                                        .smallestValue(BigDecimal.valueOf(4.0))
+                                        .value(BigDecimal.valueOf(5.0))
+                                        .largestValue(BigDecimal.valueOf(7.0))
+                                        .build())
+                                .termSet(TermSetsDataHolder.TermSetData.builder()
+                                        .index(0)
+                                        .name("testTermSet1")
+                                        .smallestValue(3.0)
+                                        .largestValue(6.0)
+                                        .importanceWeight(1.0)
+                                        .build())
+                                .build(),
+                        FuzzNumTermSetHolder.ResultData.builder()
+                                .fuzzyNumber(FuzzyNumbersHolder.FuzzyNumber.builder()
+                                        .dateTime(nowDateTime.plusSeconds(30))
+                                        .smallestValue(BigDecimal.valueOf(4.0))
+                                        .value(BigDecimal.valueOf(5.0))
+                                        .largestValue(BigDecimal.valueOf(7.0))
+                                        .build())
+                                .termSet(TermSetsDataHolder.TermSetData.builder()
+                                        .index(1)
+                                        .name("testTermSet1")
+                                        .smallestValue(3.0)
+                                        .largestValue(6.0)
+                                        .importanceWeight(1.0)
+                                        .build())
+                                .build()
+                ))
+                .build();
+
+        FuzzNumTermSetHolder fuzzNumTermSetHolder2 = FuzzNumTermSetHolder.builder()
+                .paramIndex(1)
+                .results(List.of(
+                        FuzzNumTermSetHolder.ResultData.builder()
+                                .fuzzyNumber(FuzzyNumbersHolder.FuzzyNumber.builder()
+                                        .dateTime(nowDateTime)
+                                        .smallestValue(BigDecimal.valueOf(4.0))
+                                        .value(BigDecimal.valueOf(5.0))
+                                        .largestValue(BigDecimal.valueOf(7.0))
+                                        .build())
+                                .termSet(TermSetsDataHolder.TermSetData.builder()
+                                        .index(0)
+                                        .name("testTermSet2")
+                                        .smallestValue(3.0)
+                                        .largestValue(6.0)
+                                        .importanceWeight(1.0)
+                                        .build())
+                                .build(),
+                        FuzzNumTermSetHolder.ResultData.builder()
+                                .fuzzyNumber(FuzzyNumbersHolder.FuzzyNumber.builder()
+                                        .dateTime(nowDateTime.plusSeconds(30))
+                                        .smallestValue(BigDecimal.valueOf(4.0))
+                                        .value(BigDecimal.valueOf(5.0))
+                                        .largestValue(BigDecimal.valueOf(7.0))
+                                        .build())
+                                .termSet(TermSetsDataHolder.TermSetData.builder()
+                                        .index(1)
+                                        .name("testTermSet2")
+                                        .smallestValue(3.0)
+                                        .largestValue(6.0)
+                                        .importanceWeight(1.0)
+                                        .build())
+                                .build()
+                ))
+                .build();
+
+        FuzzNumTermSetHolder fuzzNumTermSetHolder3 = FuzzNumTermSetHolder.builder()
+                .paramIndex(2)
+                .results(List.of(
+                        FuzzNumTermSetHolder.ResultData.builder()
+                                .fuzzyNumber(FuzzyNumbersHolder.FuzzyNumber.builder()
+                                        .dateTime(nowDateTime)
+                                        .smallestValue(BigDecimal.valueOf(4.0))
+                                        .value(BigDecimal.valueOf(5.0))
+                                        .largestValue(BigDecimal.valueOf(7.0))
+                                        .build())
+                                .termSet(TermSetsDataHolder.TermSetData.builder()
+                                        .index(0)
+                                        .name("testTermSet3")
+                                        .smallestValue(3.0)
+                                        .largestValue(6.0)
+                                        .importanceWeight(1.0)
+                                        .build())
+                                .build(),
+                        FuzzNumTermSetHolder.ResultData.builder()
+                                .fuzzyNumber(FuzzyNumbersHolder.FuzzyNumber.builder()
+                                        .dateTime(nowDateTime.plusSeconds(30))
+                                        .smallestValue(BigDecimal.valueOf(4.0))
+                                        .value(BigDecimal.valueOf(5.0))
+                                        .largestValue(BigDecimal.valueOf(7.0))
+                                        .build())
+                                .termSet(TermSetsDataHolder.TermSetData.builder()
+                                        .index(1)
+                                        .name("testTermSet3")
+                                        .smallestValue(3.0)
+                                        .largestValue(6.0)
+                                        .importanceWeight(1.0)
+                                        .build())
+                                .build()
+                ))
+                .build();
+
+        List<FuzzNumTermSetHolder> fuzzNumTermSetHolderList = List.of(fuzzNumTermSetHolder1, fuzzNumTermSetHolder2, fuzzNumTermSetHolder3);
+        return fuzzNumTermSetHolderList;
+    }
+
+    private static List<ConditionDataHolder> getTestConditionDataHolders() {
+        ConditionDataHolder conditionDataHolder1 = ConditionDataHolder.builder()
+                .paramTermSetIndexPairs(List.of(
+                        ConditionDataHolder.ParamTermSetIndexPair.builder()
+                                .paramIndex(0)
+                                .termSetIndex(1)
+                                .build(),
+                        ConditionDataHolder.ParamTermSetIndexPair.builder()
+                                .paramIndex(1)
+                                .termSetIndex(1)
+                                .build(),
+                        ConditionDataHolder.ParamTermSetIndexPair.builder()
+                                .paramIndex(2)
+                                .termSetIndex(1)
+                                .build()
+                ))
+                .result("testResult1")
+                .build();
+
+        List<ConditionDataHolder> conditionDataHolderList = List.of(conditionDataHolder1);
+        return conditionDataHolderList;
     }
 }
