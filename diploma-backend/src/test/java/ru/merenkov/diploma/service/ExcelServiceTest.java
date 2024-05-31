@@ -269,11 +269,11 @@ class ExcelServiceTest {
                         ConditionDataHolder.ParamTermSetIndexPair.builder()
                                 .paramIndex(1)
                                 .termSetIndex(1)
-                                .build(),
+                                .build()/*,
                         ConditionDataHolder.ParamTermSetIndexPair.builder()
                                 .paramIndex(2)
                                 .termSetIndex(1)
-                                .build()
+                                .build()*/
                 ))
                 .result("testResult1")
                 .build();

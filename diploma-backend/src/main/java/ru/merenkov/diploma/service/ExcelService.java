@@ -208,42 +208,52 @@ public class ExcelService {
             Sheet sheet = workbook.createSheet("Results");
 
             int rowIndex = 0;
+            Row row = sheet.createRow(rowIndex++);
+            Cell cell = row.createCell(0);
+            cell.setCellValue("Результат условия:");
+            cell = row.createCell(1);
+            cell.setCellValue("Пары значений в виде: Индекс параметра - Индекс терм-множества");
+
             for (ConditionDataHolder conditionDataHolder : resultDataHolder.conditionDataHolder()) {
-                Row row = sheet.createRow(rowIndex++);
-                Cell cell = row.createCell(0);
-                cell.setCellValue("Условие:");
-                cell = row.createCell(1);
-                cell.setCellValue(conditionDataHolder.paramTermSetIndexPairs().stream()
-                        .map(pair -> pair.paramIndex() + " - " + pair.termSetIndex())
-                        .reduce((s1, s2) -> s1 + ", " + s2)
-                        .orElse(""));
+                row = sheet.createRow(rowIndex++);
+                cell = row.createCell(0);
+                cell.setCellValue(conditionDataHolder.result());
+                int cellIndex = 0;
+                for (ConditionDataHolder.ParamTermSetIndexPair paramTermSetIndexPair : conditionDataHolder.paramTermSetIndexPairs()) {
+                    cell = row.createCell(++cellIndex);
+                    cell.setCellValue(String.format("%s - %s", paramTermSetIndexPair.paramIndex(), paramTermSetIndexPair.termSetIndex()));
+                }
             }
 
+            sheet.createRow(rowIndex++);
+
+            row = sheet.createRow(rowIndex++);
+            row = sheet.createRow(rowIndex++);
+            cell = row.createCell(0);
+            cell.setCellValue("Время");
+            cell = row.createCell(1);
+            cell.setCellValue("Параметры в виде: | индекс параметра | значение параметра | индекс терм-множества | название терм-множества | вес терм-множества |");
             for (Map.Entry<LocalDateTime, List<javafx.util.Pair<Integer, FuzzNumTermSetHolder.ResultData>>> localDateTimeListEntry : resultDataHolder.timeListMap().entrySet()) {
-                Row row = sheet.createRow(rowIndex++);
-                Cell cell = row.createCell(0);
-                cell.setCellValue("Время:");
-                cell = row.createCell(1);
+                row = sheet.createRow(rowIndex++);
+                int cellIndex = 0;
+                cell = row.createCell(cellIndex);
                 cell.setCellValue(localDateTimeListEntry.getKey().format(DateTimeFormatter.ofPattern("dd.MM.yyyy H:mm:ss")));
 
                 for (javafx.util.Pair<Integer, FuzzNumTermSetHolder.ResultData> integerResultDataPair : localDateTimeListEntry.getValue()) {
-                    row = sheet.createRow(rowIndex++);
-                    cell = row.createCell(0);
-                    cell.setCellValue("Параметр:");
-                    cell = row.createCell(1);
+                    cell = row.createCell(++cellIndex);
                     cell.setCellValue(integerResultDataPair.getKey());
-
-                    row = sheet.createRow(rowIndex++);
-                    cell = row.createCell(0);
-                    cell.setCellValue("Результат:");
-                    cell = row.createCell(1);
-                    cell.setCellValue(integerResultDataPair.getValue().fuzzyNumber().toString());
-
-                    row = sheet.createRow(rowIndex++);
-                    cell = row.createCell(0);
-                    cell.setCellValue("Терм-множество:");
-                    cell = row.createCell(1);
+                    cell = row.createCell(++cellIndex);
+                    cell.setCellValue(String.format("[%s, %s, %s]",
+                            integerResultDataPair.getValue().fuzzyNumber().smallestValue(),
+                            integerResultDataPair.getValue().fuzzyNumber().value(),
+                            integerResultDataPair.getValue().fuzzyNumber().largestValue()));
+                    cell = row.createCell(++cellIndex);
+                    cell.setCellValue(integerResultDataPair.getValue().termSet().index());
+                    cell = row.createCell(++cellIndex);
                     cell.setCellValue(integerResultDataPair.getValue().termSet().name());
+                    cell = row.createCell(++cellIndex);
+                    cell.setCellValue(integerResultDataPair.getValue().termSet().importanceWeight());
+                    row.createCell(++cellIndex);
                 }
             }
 
