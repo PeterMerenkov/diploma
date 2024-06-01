@@ -188,6 +188,7 @@ export default {
           }
         });
         console.log(response);
+        this.error = null;
       } catch (error) {
         console.error(error);
         this.error = 'Неправильно составлены правила!';

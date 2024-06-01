@@ -22,6 +22,7 @@ import ru.merenkov.diploma.domain.ValuesDataHolder;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -322,7 +323,7 @@ public class ExcelService {
                         });
 
 
-        Files.write(resource.getFile().toPath(), conditionsFile.getBytes());
+        Files.write(Path.of("src/test/resources/file/conditions.xlsx"), conditionsFile.getBytes());
     }
 
     private static void skipRows(int skipCount, Iterator<Row> rows) {
