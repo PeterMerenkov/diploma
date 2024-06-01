@@ -36,6 +36,7 @@ public class CalculateService {
             for (ValuesDataHolder.ValueData valueData : valuesDataHolder.values()) {
                 fuzzyNumbersHolder.fuzzyNumbers().add(
                         FuzzyNumbersHolder.FuzzyNumber.builder()
+                                .dateTime(valueData.dateTime())
                                 .smallestValue(BigDecimal.valueOf(valueData.value())
                                         .subtract(BigDecimal.valueOf(deltaDataHolder.delta1())))
                                 .value(BigDecimal.valueOf(valueData.value()))
@@ -80,6 +81,7 @@ public class CalculateService {
                         ).orElseGet(
                                 () -> TermSetsDataHolder.TermSetData.builder()
                                         .name("вне терм-множества")
+                                        .index(10)
                                         .importanceWeight(0.0)
                                         .smallestValue(0.0)
                                         .largestValue(0.0)

@@ -39,6 +39,7 @@ public class ExcelService {
     public static final int DELTAS_COLUMNS_SKIP_COUNT = 1;
 
     private final ResourceLoader resourceLoader;
+    private final CalculateService calculateService;
 
     public List<ValuesDataHolder> extractValuesDataFromFile() throws IOException {
         Resource rawValuesFile = resourceLoader.getResource("classpath:file/raw_values.xlsx");
@@ -132,6 +133,7 @@ public class ExcelService {
                         .paramIndex(row.getRowNum() - ROWS_SKIP_COUNT)
                         .termSets(new ArrayList<>())
                         .build();
+                int termSetIndex = 0;
                 while (cells.hasNext()) {
                     Cell smallestValueCell = cells.next();
                     Cell largestValueCell = cells.next();
@@ -140,12 +142,13 @@ public class ExcelService {
 
                     termSetsDataHolder.termSets().add(
                             TermSetsDataHolder.TermSetData.builder()
-                                    .index(row.getRowNum() - ROWS_SKIP_COUNT)
+                                    .index(termSetIndex)
                                     .name(nameCell.getStringCellValue())
                                     .importanceWeight(importanceWeightCell.getNumericCellValue())
                                     .smallestValue(smallestValueCell.getNumericCellValue())
                                     .largestValue(largestValueCell.getNumericCellValue())
                                     .build());
+                    termSetIndex++;
                 }
 
                 termSetsDataHolders.add(termSetsDataHolder);
@@ -156,7 +159,10 @@ public class ExcelService {
     }
 
     public List<ConditionDataHolder> extractConditionDataFromFile() throws IOException {
-        Resource conditionFile = resourceLoader.getResource("classpath:file/condition.xlsx");
+        return extractConditionDataFromFile(resourceLoader.getResource("classpath:file/conditions.xlsx"));
+    }
+
+    public List<ConditionDataHolder> extractConditionDataFromFile(Resource conditionFile) throws IOException {
         try (Workbook workbook = new XSSFWorkbook(conditionFile.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
 
@@ -281,6 +287,12 @@ public class ExcelService {
         return new ByteArrayResource(data);
     }
 
+    public ByteArrayResource getConditionsFile() throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:file/conditions.xlsx");
+        byte[] data = Files.readAllBytes(resource.getFile().toPath());
+        return new ByteArrayResource(data);
+    }
+
     public void updateRawValuesFile(MultipartFile rawValuesFile) throws IOException {
         Resource resource = resourceLoader.getResource("classpath:file/raw_values.xlsx");
         Files.write(resource.getFile().toPath(), rawValuesFile.getBytes());
@@ -294,6 +306,26 @@ public class ExcelService {
     public void updateTermSetsFile(MultipartFile termSetsFile) throws IOException {
         Resource resource = resourceLoader.getResource("classpath:file/term_sets.xlsx");
         Files.write(resource.getFile().toPath(), termSetsFile.getBytes());
+    }
+
+    public void updateConditionsFile(MultipartFile conditionsFile) throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:file/term_sets.xlsx");
+        List<ConditionDataHolder> conditionDataHolders = extractConditionDataFromFile(resource);
+        // проверка на уникальность paramIndex в правилах
+        for (int i = 0; i < conditionDataHolders.size(); i++) {
+            for (int j = i + 1; j < conditionDataHolders.size(); j++) {
+                for (ConditionDataHolder.ParamTermSetIndexPair pair1 : conditionDataHolders.get(i).paramTermSetIndexPairs()) {
+                    if (conditionDataHolders.get(j).paramTermSetIndexPairs().stream().anyMatch(
+                            pair2 -> pair1.paramIndex().equals(pair2.paramIndex())
+                    )) {
+                        throw new IllegalArgumentException("Правила должны быть уникальными по индексу параметра");
+                    }
+                }
+            }
+        }
+
+
+        Files.write(resource.getFile().toPath(), conditionsFile.getBytes());
     }
 
     private static void skipRows(int skipCount, Iterator<Row> rows) {

@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.mock.web.MockMultipartFile;
 import ru.merenkov.diploma.domain.ConditionDataHolder;
 import ru.merenkov.diploma.domain.DeltaDataHolder;
 import ru.merenkov.diploma.domain.FuzzNumTermSetHolder;
@@ -29,6 +30,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -107,7 +111,7 @@ class ExcelServiceTest {
         Resource mockResource = Mockito.mock(Resource.class);
         when(resourceLoaderMocked.getResource(anyString())).thenReturn(mockResource);
 
-        Path path = Paths.get("src/test/resources/file/conditions.xlsx");
+        Path path = Paths.get("src/test/resources/file/conditions-test.xlsx");
         try (InputStream fileInputStream = Files.newInputStream(path)) {
             when(mockResource.getInputStream()).thenReturn(fileInputStream);
 
@@ -269,16 +273,48 @@ class ExcelServiceTest {
                         ConditionDataHolder.ParamTermSetIndexPair.builder()
                                 .paramIndex(1)
                                 .termSetIndex(1)
-                                .build()/*,
+                                .build(),
                         ConditionDataHolder.ParamTermSetIndexPair.builder()
                                 .paramIndex(2)
                                 .termSetIndex(1)
-                                .build()*/
+                                .build()
                 ))
                 .result("testResult1")
                 .build();
 
-        List<ConditionDataHolder> conditionDataHolderList = List.of(conditionDataHolder1);
-        return conditionDataHolderList;
+        ConditionDataHolder conditionDataHolder2 = ConditionDataHolder.builder()
+                .paramTermSetIndexPairs(List.of(
+                        ConditionDataHolder.ParamTermSetIndexPair.builder()
+                                .paramIndex(0)
+                                .termSetIndex(1)
+                                .build(),
+                        ConditionDataHolder.ParamTermSetIndexPair.builder()
+                                .paramIndex(1)
+                                .termSetIndex(1)
+                                .build()
+                ))
+                .result("testResult1")
+                .build();
+
+        return List.of(conditionDataHolder1, conditionDataHolder2);
+    }
+
+    @Test
+    void updateConditionsFile() throws IOException {
+        // Arrange
+        Path path = Paths.get("src/test/resources/file/conditions-test.xlsx");
+        try (InputStream content = Files.newInputStream(path)) {
+            MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "conditions-test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", content);
+            Resource mockResource = mock(Resource.class);
+            when(resourceLoaderMocked.getResource(anyString())).thenReturn(mockResource);
+            when(mockResource.getFile()).thenReturn(path.toFile());
+            when(mockResource.getInputStream()).thenReturn(Files.newInputStream(path));
+
+            // Act
+            excelService.updateConditionsFile(mockMultipartFile);
+
+            // Assert
+            verify(mockResource, times(1)).getFile();
+        }
     }
 }
