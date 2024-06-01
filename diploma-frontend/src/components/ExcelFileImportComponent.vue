@@ -20,6 +20,13 @@
         <button @click="downloadTermSets" class="btn btn-primary mb-2">Скачать с сервера term_set.xlsx</button>
         <button v-if="isTermSetsFileSelected" @click="updateTermSetsFile" class="btn btn-primary mb-2">Обновить серверный файл term_set.xlsx</button>
       </div>
+      <div class="form-group">
+        <label for="conditionsFile" class="form-label">Правила</label>
+        <input type="file" class="form-control" id="termFile" @change="onConditionsFileChange" />
+        <button @click="downloadConditions" class="btn btn-primary mb-2">Скачать с сервера conditions.xlsx</button>
+        <button v-if="isConditionsFileSelected" @click="updateConditionsFile" class="btn btn-primary mb-2">Обновить серверный файл conditions.xlsx</button>
+        <div v-if="error" class="error">{{ error }}</div>
+      </div>
       <button type="submit" class="btn btn-success">Рассчитать</button>
     </form>
   </div>
@@ -39,6 +46,9 @@ export default {
       isDeltasFileSelected: false,
       termSetsFile: null,
       isTermSetsFileSelected: false,
+      consitionsFile: null,
+      isConditionsFileSelected: false,
+      error: null
     };
   },
   methods: {
@@ -53,6 +63,10 @@ export default {
     onTermSetsFileChange(e) {
       this.termSetsFile = e.target.files[0];
       this.isTermSetsFileSelected = true;
+    },
+    onConditionsFileChange(e) {
+      this.conditionsFile = e.target.files[0];
+      this.isConditionsFileSelected = true;
     },
     async calculateResult() {
       try {
@@ -98,6 +112,18 @@ export default {
 
         const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         saveAs(blob, 'term_set.xlsx');
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    async downloadConditions() {
+      try {
+        const response = await axios.get('http://localhost:8081/api/v1/excel/conditions-file', {
+          responseType: 'blob',
+        });
+
+        const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, 'conditions.xlsx');
       } catch (error) {
         console.error(error);
       }
@@ -148,6 +174,23 @@ export default {
         console.log(response);
       } catch (error) {
         console.error(error);
+      }
+    },
+    async updateConditionsFile() {
+      try {
+        const response = await axios.post('http://localhost:8081/api/v1/excel/update-conditions-file', 
+        {
+          conditionsFile: this.conditionsFile
+        },
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        console.log(response);
+      } catch (error) {
+        console.error(error);
+        this.error = 'Неправильно составлены правила!';
       }
     },
   },

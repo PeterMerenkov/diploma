@@ -73,6 +73,16 @@ public class MainController {
                 .body(resource);
     }
 
+    @GetMapping("/conditions-file")
+    public ResponseEntity<ByteArrayResource> getConditionFile() throws IOException {
+        ByteArrayResource resource = excelService.getConditionsFile();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=condition.xlsx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(resource.contentLength())
+                .body(resource);
+    }
+
     @PostMapping("/update-raw-values-file")
     public void updateRawValuesFile(
             @RequestParam("rawValuesFile") MultipartFile rawValuesFile
@@ -92,5 +102,12 @@ public class MainController {
             @RequestParam("termSetsFile") MultipartFile termSetsFile
     ) throws IOException {
         excelService.updateTermSetsFile(termSetsFile);
+    }
+
+    @PostMapping("/update-conditions-file")
+    public void updateConditionsFile(
+            @RequestParam("conditionsFile") MultipartFile conditionsFile
+    ) throws IOException {
+        excelService.updateConditionsFile(conditionsFile);
     }
 }

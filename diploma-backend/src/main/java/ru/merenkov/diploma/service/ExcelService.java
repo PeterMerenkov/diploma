@@ -309,20 +309,17 @@ public class ExcelService {
     }
 
     public void updateConditionsFile(MultipartFile conditionsFile) throws IOException {
-        Resource resource = resourceLoader.getResource("classpath:file/term_sets.xlsx");
+        Resource resource = conditionsFile.getResource();
         List<ConditionDataHolder> conditionDataHolders = extractConditionDataFromFile(resource);
         // проверка на уникальность paramIndex в правилах
-        for (int i = 0; i < conditionDataHolders.size(); i++) {
-            for (int j = i + 1; j < conditionDataHolders.size(); j++) {
-                for (ConditionDataHolder.ParamTermSetIndexPair pair1 : conditionDataHolders.get(i).paramTermSetIndexPairs()) {
-                    if (conditionDataHolders.get(j).paramTermSetIndexPairs().stream().anyMatch(
-                            pair2 -> pair1.paramIndex().equals(pair2.paramIndex())
-                    )) {
-                        throw new IllegalArgumentException("Правила должны быть уникальными по индексу параметра");
-                    }
-                }
-            }
-        }
+        conditionDataHolders.stream().flatMap(conditionDataHolder -> conditionDataHolder.paramTermSetIndexPairs().stream())
+                        .map(ConditionDataHolder.ParamTermSetIndexPair::paramIndex)
+                        .reduce((paramIndex1, paramIndex2) -> {
+                            if (paramIndex1.equals(paramIndex2)) {
+                                throw new IllegalArgumentException("Неправильно составлены правила!");
+                            }
+                            return paramIndex2;
+                        });
 
 
         Files.write(resource.getFile().toPath(), conditionsFile.getBytes());
