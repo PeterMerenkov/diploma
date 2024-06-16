@@ -1,0 +1,18 @@
+@startuml
+start
+:Создать пустой список для результата;
+repeat :Итерация по valuesDataHolderList;
+  if (Проверка, находится ли текущий индекс в пределах размера deltaDataHoldersList) then (да)
+    :Получить valuesDataHolder и deltaDataHolder для текущего индекса;
+    :Создать новый FuzzyNumbersHolder для текущего индекса;
+    repeat :Итерация по значениям в valuesDataHolder;
+      :Расчет smallestValue, value и largestValue для каждого valueData;
+      :Добавить рассчитанный FuzzyNumber в FuzzyNumbersHolder;
+    repeat while (Есть еще значения в valuesDataHolder)
+    :Добавить FuzzyNumbersHolder в список результатов;
+  else (нет)
+    :Пропустить текущую итерацию;
+  endif
+repeat while (Есть еще элементы в valuesDataHolderList)
+stop
+@enduml

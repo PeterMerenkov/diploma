@@ -7,25 +7,29 @@
         <input type="file" class="form-control" id="rawDataFile" @change="onRawValuesFileChange" />
         <button @click="downloadRawValues" class="btn btn-primary mb-2">Скачать с сервера raw_values.xlsx</button>
         <button v-if="isRawValueFileSelected" @click="updateRawValuesFile" class="btn btn-primary mb-2">Обновить серверный файл raw_values.xlsx</button>
+        <div v-if="updateRawValuesMessage" class="alert alert-success">{{ updateRawValuesMessage }}</div>
       </div>
       <div class="form-group">
         <label for="deltasFile" class="form-label">Дельты</label>
         <input type="file" class="form-control" id="deltasFile" @change="onDeltasFileChange" />
         <button @click="downloadDeltas" class="btn btn-primary mb-2">Скачать с сервера deltas.xlsx</button>
         <button v-if="isDeltasFileSelected" @click="updateDeltasFile" class="btn btn-primary mb-2">Обновить серверный файл deltas.xlsx</button>
+        <div v-if="updateDeltasMessage" class="alert alert-success">{{ updateDeltasMessage }}</div>
       </div>
       <div class="form-group">
         <label for="termFile" class="form-label">Терм-множества</label>
         <input type="file" class="form-control" id="termFile" @change="onTermSetsFileChange" />
         <button @click="downloadTermSets" class="btn btn-primary mb-2">Скачать с сервера term_set.xlsx</button>
         <button v-if="isTermSetsFileSelected" @click="updateTermSetsFile" class="btn btn-primary mb-2">Обновить серверный файл term_set.xlsx</button>
+        <div v-if="updateTermSetsMessage" class="alert alert-success">{{ updateTermSetsMessage }}</div>
       </div>
       <div class="form-group">
         <label for="conditionsFile" class="form-label">Правила</label>
         <input type="file" class="form-control" id="termFile" @change="onConditionsFileChange" />
         <button @click="downloadConditions" class="btn btn-primary mb-2">Скачать с сервера conditions.xlsx</button>
         <button v-if="isConditionsFileSelected" @click="updateConditionsFile" class="btn btn-primary mb-2">Обновить серверный файл conditions.xlsx</button>
-        <div v-if="error" class="error">{{ error }}</div>
+        <div v-if="updateConditionsMessage" class="alert alert-success">{{ updateConditionsMessage }}</div>
+        <div v-if="error" class="alert alert-danger">{{ error }}</div>
       </div>
       <button type="submit" class="btn btn-success">Рассчитать</button>
     </form>
@@ -48,7 +52,11 @@ export default {
       isTermSetsFileSelected: false,
       consitionsFile: null,
       isConditionsFileSelected: false,
-      error: null
+      error: null,
+      updateRawValuesMessage: null,
+      updateDeltasMessage: null,
+      updateTermSetsMessage: null,
+      updateConditionsMessage: null,
     };
   },
   methods: {
@@ -140,6 +148,7 @@ export default {
           }
         });
         console.log(response);
+        this.updateRawValuesMessage = 'Файл raw_values.xlsx успешно обновлен';
       } catch (error) {
         console.error(error);
       }
@@ -156,6 +165,7 @@ export default {
           }
         });
         console.log(response);
+        this.updateDeltasMessage = 'Файл deltas.xlsx успешно обновлен';
       } catch (error) {
         console.error(error);
       }
@@ -172,6 +182,7 @@ export default {
           }
         });
         console.log(response);
+        this.updateTermSetsMessage = 'Файл term_sets.xlsx успешно обновлен';
       } catch (error) {
         console.error(error);
       }
@@ -189,6 +200,7 @@ export default {
         });
         console.log(response);
         this.error = null;
+        this.updateConditionsMessage = 'Файл conditions.xlsx успешно обновлен';
       } catch (error) {
         console.error(error);
         this.error = 'Неправильно составлены правила!';

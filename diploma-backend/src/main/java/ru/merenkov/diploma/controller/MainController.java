@@ -12,10 +12,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import ru.merenkov.diploma.domain.ConditionDataHolder;
+import ru.merenkov.diploma.domain.DeltaDataHolder;
+import ru.merenkov.diploma.domain.FuzzNumTermSetHolder;
+import ru.merenkov.diploma.domain.FuzzyNumbersHolder;
+import ru.merenkov.diploma.domain.ResultDataHolder;
+import ru.merenkov.diploma.domain.TermSetsDataHolder;
+import ru.merenkov.diploma.domain.ValuesDataHolder;
 import ru.merenkov.diploma.service.CalculateService;
 import ru.merenkov.diploma.service.ExcelService;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/excel")
@@ -27,15 +35,21 @@ public class MainController {
 
     @GetMapping
     public ResponseEntity<ByteArrayResource> getExcelContent() throws IOException {
-        ByteArrayResource resource = excelService.convertToResultExcelFile(
-                calculateService.calculateResult(calculateService.getFuzzNumTermSetPairs(
-                        calculateService.calculateFuzzyNumbers(
-                                excelService.extractValuesDataFromFile(),
-                                excelService.extractDeltasDataFromFile()
-                        ),
-                        excelService.extractTermSetsDataFromFile()
-                ),
-                        excelService.extractConditionDataFromFile()));
+        List<ValuesDataHolder> valuesDataHolderList = excelService.extractValuesDataFromFile();
+        List<DeltaDataHolder> deltaDataHoldersList = excelService.extractDeltasDataFromFile();
+        List<FuzzyNumbersHolder> fuzzyNumbersHolders = calculateService.calculateFuzzyNumbers(
+                valuesDataHolderList,
+                deltaDataHoldersList
+        );
+        List<TermSetsDataHolder> termSetsDataHolders = excelService.extractTermSetsDataFromFile();
+        List<FuzzNumTermSetHolder> fuzzNumTermSetPairs = calculateService.getFuzzNumTermSetPairs(
+                fuzzyNumbersHolders,
+                termSetsDataHolders
+        );
+        List<ConditionDataHolder> conditions = excelService.extractConditionDataFromFile();
+        ResultDataHolder resultDataHolder = calculateService.calculateResult(fuzzNumTermSetPairs,
+                conditions);
+        ByteArrayResource resource = excelService.convertToResultExcelFile(resultDataHolder);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=results.xlsx")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
